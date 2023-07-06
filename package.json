@@ -1,0 +1,27 @@
+{
+  "name": "api meli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+
+  "scripts": {
+    "start_server": "node index.js",
+    "start_loadbalancer": "node config.js",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Hneemias Souza Barbosa",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "axios-retry": "^3.5.0",
+    "cluster": "^0.7.7",
+    "express": "^4.18.2",
+    "https": "^1.0.0",
+    "https-proxy-agent": "^7.0.0",
+    "@vercel/node": "^2.6.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1"
+  }
+}
