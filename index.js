@@ -45,34 +45,40 @@ app.get('/getProductData', async (req, res) => {
                 const match = response.data.match(regex);
                 if (match) {
                     const data = JSON.parse(match[1]);
-                    data.translations.process = { process_id: process.pid }
-                    data.translations.process.duration = (new Date() - startTime) / 1000
+                    if (data.initialState.app == 'vip') {
+                        data.translations.process = { process_id: process.pid }
+                        data.translations.process.duration = (new Date() - startTime) / 1000
+                        var seller = data.initialState.components.seller.seller
+                        const diffInDays = Math.floor((new Date() - new Date(data.initialState.track.gtm_event.startTime)) / (1000 * 60 * 60 * 24));
 
-                    const diffInDays = Math.floor((new Date() - new Date(data.initialState.track.gtm_event.startTime)) / (1000 * 60 * 60 * 24));
+                        var product =
+                        {
+                            "id": data.initialState.id,
+                            "categ_id": data.initialState.track.melidata_event.event_data.category_id,
+                            "title": data.initialState.share.title,
+                            "price": +data.initialState.track.melidata_event.event_data.price,
+                            "days": +diffInDays,
+                            "sold": +data.initialState.track.gtm_event.soldStock,
+                            "average": +Math.floor(data.initialState.track.gtm_event.soldStock / diffInDays),
+                            "createDate": data.initialState.track.gtm_event.startTime,
+                            "permalink": data.initialState.share.permalink,
+                            "thumbnail": `https://http2.mlstatic.com/D_${data.initialState.share.picture.id}-I.jpg`,
+                            "fulfillment": data.initialState.track.analytics_event.custom_dimensions.customDimensions.fulfillment == "YES",
+                            "reputation": data.initialState.track.melidata_event.event_data.power_seller_status,
+                            "official_store": data.initialState.track.melidata_event.event_data.official_store_id,
+                            "brand_id": +data.initialState.track.melidata_event.event_data.item_attribute_brand_id || null,
+                            "brand_name": data.initialState.track.gtm_event.brandId || null,
+                            "seller_id": +data.initialState.track.melidata_event.event_data.seller_id,
+                            "seller_nickname": data.initialState.track.analytics_event.custom_dimensions.customDimensions.collectorNickname,
+                            "official_store_id": seller ? +seller.official_store_id : null,
+                            "official_store_name": seller ? seller.name : null,
+                            "path_from_root": data.initialState.track.analytics_event.custom_dimensions.pathFromRoot,
+                        }
 
-                    var product =
-                    {
-                        "id": data.initialState.id,
-                        "categ_id": data.initialState.track.melidata_event.event_data.category_id,
-                        "title": data.initialState.share.title,
-                        "price": +data.initialState.track.melidata_event.event_data.price,
-                        "days": +diffInDays,
-                        "sold": +data.initialState.track.gtm_event.soldStock,
-                        "average": +Math.floor(data.initialState.track.gtm_event.soldStock / diffInDays),
-                        "createDate": data.initialState.track.gtm_event.startTime,
-                        "permalink": data.initialState.share.permalink,
-                        "thumbnail": `https://http2.mlstatic.com/D_${data.initialState.share.picture.id}-I.jpg`,
-                        "fulfillment": data.initialState.track.analytics_event.custom_dimensions.customDimensions.fulfillment == "YES",
-                        "reputation": data.initialState.track.melidata_event.event_data.power_seller_status,
-                        "official_store": data.initialState.track.melidata_event.event_data.official_store_id,
-                        "brand_id": +data.initialState.track.melidata_event.event_data.item_attribute_brand_id || null,
-                        "brand_name": data.initialState.track.gtm_event.brandId || null,
-                        "seller_id": +data.initialState.track.melidata_event.event_data.seller_id,
-                        "seller_nickname": data.initialState.track.analytics_event.custom_dimensions.customDimensions.collectorNickname,
-                        "path_from_root": data.initialState.track.analytics_event.custom_dimensions.pathFromRoot,
+                        return product
+                    } else {
+                        return { id: id, error: true, message: 'Produto de catálogo.', duration: (new Date() - startTime) / 1000 }
                     }
-
-                    return product
                 } else {
                     return { id: id, error: true, message: 'Produto não encontrado.', duration: (new Date() - startTime) / 1000 }
                 }
