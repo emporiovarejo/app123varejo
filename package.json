@@ -1,9 +1,8 @@
 {
-  "name": "api meli",
+  "name": "teste3",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-
   "scripts": {
     "start_server": "node index.js",
     "start_loadbalancer": "node config.js",
@@ -13,13 +12,15 @@
   "author": "Hneemias Souza Barbosa",
   "license": "ISC",
   "dependencies": {
+    "@vercel/node": "^2.6.2",
     "axios": "^1.4.0",
     "axios-retry": "^3.5.0",
+    "body-parser": "^1.20.2",
     "cluster": "^0.7.7",
     "express": "^4.18.2",
     "https": "^1.0.0",
     "https-proxy-agent": "^7.0.0",
-    "@vercel/node": "^2.6.2"
+    "mongoose": "^7.4.1"
   },
   "devDependencies": {
     "concurrently": "^8.0.1"

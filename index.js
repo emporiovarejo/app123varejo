@@ -3,6 +3,24 @@ const axios = require("axios");
 const axiosRetry = require('axios-retry');
 const app = express();
 var port = 7000
+process.env.TZ = "Brazil/Sao_Paulo";
+
+var bodyParser = require('body-parser')
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
+
+
+const mongoose = require('mongoose');
+require('./database/mongoose')
+require('./models/historico')
+require('./models/produtos')
+
+const Historico = mongoose.model('Historico')
+const Produto = mongoose.model('Produto')
+
 axiosRetry(axios, {
     retries: 10,
     retryDelay: (retryCount) => {
@@ -21,6 +39,47 @@ const cabecalho = async () => {
     return header
 }
 
+app.post("/product/create", async (req, res) => {
+    const products = req.body
+    if (products instanceof Array) {
+
+        var start = new Date();
+        var end = new Date();
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+
+        const response = await Promise.all(
+
+            products.map(async (produto) => {
+                await Historico.deleteMany({
+                    id: produto.id,
+                    data: {
+                        $gte: start,
+                        $lt: end
+                    }
+                })
+                // .then((data) => console.log('Regitro excluido com sucesso.'))
+
+                Historico({
+                    id: produto.id,
+                    data: new Date(),
+                    sold: produto.sold,
+                    price: produto.price
+                }).save()
+                //.then((data) => console.log('Regitro salvo com sucesso.'))
+
+                await Produto.deleteMany({ id: produto.id })
+                return Produto(produto).save()
+
+            })
+        )
+        res.send(response)
+    } else {
+        res.send({ error: true, message: 'Nao recebeu uma array de produtos' })
+    }
+
+
+})
 
 app.get("/", (req, res) => {
     axios.get('http://httpbin.org/ip')
