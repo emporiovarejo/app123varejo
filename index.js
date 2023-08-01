@@ -148,6 +148,42 @@ app.get('/getProductData', async (req, res) => {
             return { id: id, error: true, message: err.message, duration: (new Date() - startTime) / 1000 }
         }))
     )
+    if (req.query.write) {
+        var start = new Date();
+        var end = new Date();
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+
+        response = response.filter((e) => e !== null && !e.error)
+
+        const res = await Promise.all(
+
+            response.map(async (produto) => {
+                await Historico.deleteMany({
+                    id: produto.id,
+                    data: {
+                        $gte: start,
+                        $lt: end
+                    }
+                })
+                // .then((data) => console.log('Regitro excluido com sucesso.'))
+
+                Historico({
+                    id: produto.id,
+                    data: new Date(),
+                    sold: produto.sold,
+                    price: produto.price
+                }).save()
+                //.then((data) => console.log('Regitro salvo com sucesso.'))
+
+                await Produto.deleteMany({ id: produto.id })
+                return Produto(produto).save()
+
+            })
+        )
+        // console.log(res)
+    }
+
     res.send(response);
 });
 
